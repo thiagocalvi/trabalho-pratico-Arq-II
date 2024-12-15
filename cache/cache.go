@@ -18,3 +18,9 @@ func NewCache(size int) *Cache {
 		blocs: make([]CacheBlock, size),
 	}
 }
+
+// Ler da cache
+// Escrever na cache
+
+// Politica de substituição
+// Politica de escrita

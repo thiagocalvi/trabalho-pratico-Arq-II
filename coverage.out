@@ -1,0 +1,24 @@
+mode: set
+trabalho_pratico/main.go:5.13,7.2 1 0
+trabalho_pratico/cache/cache.go:15.32,20.2 1 1
+trabalho_pratico/main_memory/main_memory.go:13.38,20.28 2 1
+trabalho_pratico/main_memory/main_memory.go:20.28,22.3 1 1
+trabalho_pratico/main_memory/main_memory.go:24.2,24.15 1 1
+trabalho_pratico/main_memory/main_memory.go:28.61,29.38 1 1
+trabalho_pratico/main_memory/main_memory.go:29.38,31.3 1 1
+trabalho_pratico/main_memory/main_memory.go:32.2,33.12 2 1
+trabalho_pratico/main_memory/main_memory.go:37.56,38.38 1 1
+trabalho_pratico/main_memory/main_memory.go:38.38,40.3 1 1
+trabalho_pratico/main_memory/main_memory.go:41.2,41.29 1 1
+trabalho_pratico/main_memory/main_memory.go:45.52,49.53 3 1
+trabalho_pratico/main_memory/main_memory.go:49.53,51.19 2 1
+trabalho_pratico/main_memory/main_memory.go:51.19,53.4 1 0
+trabalho_pratico/main_memory/main_memory.go:56.3,57.32 2 1
+trabalho_pratico/main_memory/main_memory.go:57.32,59.4 1 1
+trabalho_pratico/main_memory/main_memory.go:60.3,60.33 1 1
+trabalho_pratico/main_memory/main_memory.go:63.2,63.15 1 1
+trabalho_pratico/main_memory/main_memory.go:67.32,69.31 2 0
+trabalho_pratico/main_memory/main_memory.go:69.31,71.30 2 0
+trabalho_pratico/main_memory/main_memory.go:71.30,73.4 1 0
+trabalho_pratico/main_memory/main_memory.go:74.3,75.15 2 0
+trabalho_pratico/main_memory/main_memory.go:77.2,77.37 1 0
