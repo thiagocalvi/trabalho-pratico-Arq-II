@@ -4,30 +4,22 @@ import "testing"
 
 // Criação de uma nova Cache com tamanho 5
 func TestNewCache(t *testing.T) {
-	size := 5
-	cache := NewCache(size)
+	mainMemorySize := 100
+	cache := NewCache(mainMemorySize)
 
-	if cache == nil {
-		t.Fatal("A cache não foi criada corretamente, recebeu nil")
+	// Verifica se a cache foi inicializada corretamente
+	expectedSize := int(float64(mainMemorySize) * 0.4)
+
+	if cache.size != expectedSize {
+		t.Errorf("esperado tamanho da cache %d, mas obteve %d", expectedSize, cache.size)
 	}
 
-	if cache.size != size {
-		t.Errorf("Tamanho da cache incorreto, esperado %d, mas recebeu %d", size, cache.size)
+	if len(cache.blocks) != 0 {
+		t.Errorf("esperado 0 blocos na cache, mas obteve %d", len(cache.blocks))
 	}
 
-	if len(cache.blocs) != size {
-		t.Errorf("Quantidade de blocos incorreta, esperado %d, mas recebeu %d", size, len(cache.blocs))
+	if len(cache.queue) != 0 {
+		t.Errorf("esperado fila vazia, mas obteve %d elementos", len(cache.queue))
 	}
 
-	for i, block := range cache.blocs {
-		if block.tag != 0 {
-			t.Errorf("Bloco %d possui tag inicial incorreta, esperado 0, mas recebeu %d", i, block.tag)
-		}
-		if block.data != "" {
-			t.Errorf("Bloco %d possui data inicial incorreta, esperado string vazia, mas recebeu %q", i, block.data)
-		}
-		if block.state != 0 {
-			t.Errorf("Bloco %d possui estado inicial incorreto, esperado 0, mas recebeu %d", i, block.state)
-		}
-	}
 }
