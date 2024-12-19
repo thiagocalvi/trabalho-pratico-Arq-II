@@ -8,9 +8,9 @@ O presente trabalho tem como objetivo a implementação de um simulador de coer�
 - Quando fizer o clone do repositório renomear a pasta para "trabalho_pratico" para a correta importações dos modulos
 
 ## TODO
-- [] Salvar os logs do programa em um arquivo de saída
-- [] Implementar o método "Write" na cache
-- [] Implementar o método "Read" na cache
+- [ ] Salvar os logs do programa em um arquivo de saída
+- [ ] Implementar o método "Write" na cache
+- [ ] Implementar o método "Read" na cache
 
 Discentes
 - [Matheus Foltran Consonni](https://github.com/MatheusFoltran)
