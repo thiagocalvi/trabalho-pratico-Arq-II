@@ -1,4 +1,6 @@
 # Trabalho Prático de Implementação - Arq. II
+## Importante
+- Quando fizer o clone do repositório renomear a pasta para "trabalho_pratico" para a correta importações dos modulos
 
 ## Descrição
 Implementação jogo da memória aplicando os conceitos de compartilhamento de cache

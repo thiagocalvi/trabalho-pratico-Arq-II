@@ -1,5 +1,7 @@
 package cache
 
+import "trabalho_pratico/main_memory"
+
 // Define um tipo personalizado para o estado de uma linha da cache com uint8
 type CacheBlockState uint8
 
@@ -59,4 +61,14 @@ func NewCache(mainMemorySize int) *Cache {
 	}
 
 	return cache
+}
+
+// Escreve um *value* na cache
+func (c *Cache) Write(address int, value string, memory *main_memory.MainMemory) error {
+	return nil
+}
+
+// Lê um valor da cache
+func (c *Cache) Read(address int) error {
+	return nil
 }
