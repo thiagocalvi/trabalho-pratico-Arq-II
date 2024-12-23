@@ -9,8 +9,8 @@ O presente trabalho tem como objetivo a implementação de um simulador de coer�
 
 ## TODO
 - [ ] Salvar os logs do programa em um arquivo de saída
-- [ ] Implementar o método "Write" na cache
-- [ ] Implementar o método "Read" na cache
+- [X] Implementar o método "Write" na cache -> Necessita revisão
+- [X] Implementar o método "Read" na cache -> Necessita revisão
 
 Discentes
 - [Matheus Foltran Consonni](https://github.com/MatheusFoltran)
