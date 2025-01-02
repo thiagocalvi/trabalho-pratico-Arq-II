@@ -14,8 +14,8 @@ func TestNewMemory(t *testing.T) {
 		t.Fatal("A memória não foi criada corretamente, recebeu nil")
 	}
 
-	if memory.size != size {
-		t.Errorf("Tamanho da memória incorreto, esperado %d, mas recebeu %d", size, memory.size)
+	if memory.Size != size {
+		t.Errorf("Tamanho da memória incorreto, esperado %d, mas recebeu %d", size, memory.Size)
 	}
 
 	if len(memory.data) != size {
