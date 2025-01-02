@@ -120,76 +120,68 @@ func TestCacheWrite(t *testing.T) {
 
 func TestCacheRead(t *testing.T) {
     mainMemory := main_memory.NewMemory(1000)
-    cache := NewCache(mainMemory.Size)
+    cache := NewCache(4)
 
-    // Caso 1: Cache miss
-    addressMiss := 10
-    valueMiss := "miss value"
-    _ = mainMemory.Write(addressMiss, valueMiss)
-
-    result, err := cache.Read(addressMiss, mainMemory)
-    if err != nil {
-        t.Errorf("Erro ao ler da cache (miss): %v", err)
-    }
-    if result != valueMiss {
-        t.Errorf("Valor incorreto no miss. Esperado: %q, Recebido: %q", valueMiss, result)
+    // Inicializa a memória principal
+    for i := 0; i < 10; i++ {
+        _ = mainMemory.Write(i, fmt.Sprintf("valor %d", i))
     }
 
-    // Verifica se o bloco foi atualizado
-    tagMiss := addressMiss % cache.size
-    blockMiss, existsMiss := cache.blocks[tagMiss]
-    if !existsMiss || blockMiss.state != Shared || blockMiss.data[0] != valueMiss {
-        t.Errorf("Bloco não atualizado corretamente no miss. Esperado: %q, Estado: Shared", valueMiss)
+    // Testa leitura com cache miss
+    value := cache.read(1, mainMemory)
+    if value != "valor 1" {
+        t.Errorf("Erro na leitura (miss). Esperado: %q, Recebido: %q", "valor 1", value)
     }
 
-    // Caso 2: Cache hit
-    addressHit := addressMiss
-    result, err = cache.Read(addressHit, mainMemory)
-    if err != nil {
-        t.Errorf("Erro ao ler da cache (hit): %v", err)
+    // Verifica se o bloco foi adicionado corretamente
+    tag := 1 % cache.size
+    block, exists := cache.blocks[tag]
+    if !exists || len(block.data) == 0 || block.data[0] != "valor 1" {
+        t.Errorf("Bloco não foi adicionado corretamente na cache após miss.")
     }
-    if result != valueMiss {
-        t.Errorf("Valor incorreto no hit. Esperado: %q, Recebido: %q", valueMiss, result)
+
+    // Testa leitura com cache hit
+    value = cache.read(1, mainMemory)
+    if value != "valor 1" {
+        t.Errorf("Erro na leitura (hit). Esperado: %q, Recebido: %q", "valor 1", value)
     }
 }
 
 func TestReplaceBlock(t *testing.T) {
     mainMemory := main_memory.NewMemory(1000)
-    cache := NewCache(3) // Cache com tamanho limitado a 3 blocos
+    cache := NewCache(mainMemory.Size)
 
-    // Preenche a cache com 3 blocos
-    for i := 0; i < 3; i++ {
-        data := fmt.Sprintf("data-%d", i)
-        cache.ReplaceBlock(i, data, mainMemory)
-    }
-
-    // Garante que os 3 blocos iniciais estão na cache
-    for i := 0; i < 3; i++ {
-        if block, exists := cache.blocks[i]; !exists || block.data[0] != fmt.Sprintf("data-%d", i) {
-            t.Errorf("Bloco %d não encontrado ou incorreto", i)
+    // Simula o preenchimento total da cache
+    for i := 0; i < cache.size; i++ {
+        cache.queue = append(cache.queue, i)
+        cache.blocks[i] = &CacheBlock{
+            tag:   i,
+            data:  []string{fmt.Sprintf("valor antigo %d", i)},
+            state: Modified,
         }
     }
 
-    // Substitui um bloco (deve remover o mais antigo)
-    newTag := 3
-    newData := "new-data"
-    cache.ReplaceBlock(newTag, newData, mainMemory)
+    // Escreve um novo valor, forçando a substituição
+    address := 100
+    value := "novo valor"
+    cache.ReplaceBlock(address, value, mainMemory)
 
     // Verifica se o bloco mais antigo foi removido
-    if _, exists := cache.blocks[0]; exists {
-        t.Errorf("Bloco mais antigo (tag 0) não foi removido corretamente")
+    oldest := 0
+    if _, exists := cache.blocks[oldest]; exists {
+        t.Errorf("Bloco mais antigo (%d) não foi removido corretamente", oldest)
     }
 
-    // Verifica se o novo bloco foi adicionado
-    if block, exists := cache.blocks[newTag]; !exists || block.data[0] != newData {
-        t.Errorf("Novo bloco não foi adicionado corretamente. Esperado: %q, Recebido: %v", newData, block)
+    // Verifica se o valor antigo foi sincronizado com a memória principal
+    if memValue, _ := mainMemory.Read(oldest); memValue != "valor antigo 0" {
+        t.Errorf("Valor antigo não foi escrito na memória principal. Esperado: %q, Recebido: %q", "valor antigo 0", memValue)
     }
 
-    // Verifica se os outros blocos ainda estão na cache
-    for i := 1; i < 3; i++ {
-        if block, exists := cache.blocks[i]; !exists || block.data[0] != fmt.Sprintf("data-%d", i) {
-            t.Errorf("Bloco %d foi removido incorretamente", i)
-        }
+    // Verifica o novo bloco
+    newTag := address % cache.size
+    newBlock, exists := cache.blocks[newTag]
+    if !exists || newBlock.data[0] != value || newBlock.state != Modified {
+        t.Errorf("Novo bloco não foi atualizado corretamente. Esperado: {Tag: %d, Dados: %q, Estado: Modified}", newTag, value)
     }
 }
 

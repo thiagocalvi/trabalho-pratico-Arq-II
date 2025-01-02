@@ -78,30 +78,33 @@ func NewCache(mainMemorySize int) *Cache {
 }
 
 // Substitui o bloco mais antigo (FIFO) e atualiza o conteúdo
-func (c *Cache) ReplaceBlock(tag int, newData string, memory *main_memory.MainMemory) {
-    // Verifica se a fila está cheia
-    if len(c.queue) >= c.size {
-        // Remove o bloco mais antigo
-        oldestTag := c.queue[0]
-        c.queue = c.queue[1:]
+func (c *Cache) ReplaceBlock(address int, value string, memory *main_memory.MainMemory) {
+    // Calcula o índice do bloco a ser substituído
+    oldestBlockTag := c.queue[0]   // O mais antigo é o primeiro na fila (FIFO)
+    c.queue = c.queue[1:]          // Remove o mais antigo da fila
 
-        if oldestBlock, exists := c.blocks[oldestTag]; exists {
-            if oldestBlock.state == Modified {
-                // Sincroniza com a memória principal
-                memory.Write(oldestTag, oldestBlock.data[0])
-            }
-            delete(c.blocks, oldestTag) // Remove o bloco da cache
+    // Verifica o estado do bloco mais antigo
+    if oldBlock, exists := c.blocks[oldestBlockTag]; exists && oldBlock.state == Modified {
+        // Sincroniza os dados com a memória principal
+        err := memory.Write(oldestBlockTag, oldBlock.data[0]) // Escreve o dado na memória
+        if err != nil {
+            panic(fmt.Sprintf("Erro ao sincronizar bloco com a memória: %v", err))
         }
     }
 
-    // Adiciona o novo bloco à cache
-    newBlock := &CacheBlock{
-        tag:   tag,
-        data:  []string{newData},
-        state: Shared, // Estado inicial como Shared
-    }
-    c.blocks[tag] = newBlock
-    c.queue = append(c.queue, tag) // Atualiza a fila
+    // Remove o bloco antigo da cache
+    delete(c.blocks, oldestBlockTag)
+
+    // Calcula o novo índice do bloco
+    newTag := address % c.size
+
+    // Cria e insere o novo bloco
+    newBlock := NewCacheBlock(newTag, len(value))
+    newBlock.data[0] = value       // Adiciona o dado ao novo bloco
+    newBlock.state = Modified      // Define o estado como `Modified`
+
+    c.blocks[newTag] = newBlock    // Adiciona o novo bloco à cache
+    c.queue = append(c.queue, newTag) // Insere o novo bloco na fila
 }
 
 func (c *Cache) Write(address int, value string, memory *main_memory.MainMemory) error {
@@ -141,51 +144,34 @@ func (c *Cache) Write(address int, value string, memory *main_memory.MainMemory)
     return nil
 }
 
-func (c *Cache) Read(address int, memory *main_memory.MainMemory) (string, error) {
-    tag := address % c.size // Calcula a tag baseada no tamanho da cache
-    block, exists := c.blocks[tag]
+func (c *Cache) read(address int, memory *main_memory.MainMemory) string {
+    tag := address % c.size
+    fmt.Printf("Lendo endereço %d (tag: %d)...\n", address, tag)
 
-    if exists && block.state != Invalid {
-        // Cache hit
+    // Verifica se o bloco existe na cache
+    if block, exists := c.blocks[tag]; exists {
         if len(block.data) > 0 {
-            return block.data[0], nil // Retorna o dado diretamente
+            fmt.Printf("Cache hit: Dados encontrados no bloco %d.\n", tag)
+            return block.data[0]
+        } else {
+            fmt.Printf("Erro: Bloco encontrado, mas 'data' está vazio.\n")
         }
     }
 
-    // Cache miss: busca o dado na memória principal
-    value, err := memory.Read(address)
+    // Cache miss: Lê da memória principal
+    fmt.Printf("Cache miss: Lendo da memória principal.\n")
+    memValue, err := memory.Read(address)
     if err != nil {
-        return "", fmt.Errorf("erro ao ler da memória principal: %w", err)
+        panic(fmt.Sprintf("Erro ao ler da memória principal: %v", err))
     }
 
-    // Atualiza ou cria o bloco na cache
-    if !exists || block == nil {
-        block = &CacheBlock{
-            tag:   tag,
-            data:  make([]string, 1), // Inicializa a lista de dados
-            state: Shared,
-        }
-        c.blocks[tag] = block // Adiciona o bloco à cache
-    }
+    // Substitui ou adiciona o bloco na cache
+    c.ReplaceBlock(address, memValue, memory)
+    fmt.Printf("Bloco substituído ou adicionado na cache (tag: %d).\n", tag)
 
-    block.data[0] = value    // Atualiza o dado no bloco
-    block.state = Shared     // Define o estado como Shared
-
-    // Atualiza a fila para gerenciamento da cache
-    c.queue = append(c.queue, tag)
-    if len(c.queue) > c.size {
-        oldestTag := c.queue[0]
-        c.queue = c.queue[1:] // Remove o bloco mais antigo da fila
-
-        if oldestBlock, exists := c.blocks[oldestTag]; exists && oldestBlock.state == Modified {
-            // Sincroniza o bloco mais antigo com a memória principal se necessário
-            memory.Write(oldestTag, oldestBlock.data[0])
-        }
-        delete(c.blocks, oldestTag) // Remove o bloco da cache
-    }
-
-    return value, nil
+    return memValue
 }
+
 
 func (c *Cache) GetDisplayBlocks() [][]string {
 	blockSize := c.size / 5
