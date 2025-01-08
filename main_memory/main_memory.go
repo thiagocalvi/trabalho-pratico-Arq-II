@@ -5,14 +5,14 @@ import (
 )
 
 type MainMemory struct {
-	size int            // Tamanho da memoria principal
+	Size int            // Tamanho da memoria principal
 	data map[int]string // Dados armazenado na memoria principal, tipo chave, valor. Chave
 	// representa o endereço, valor representa o dado guardado no endereço.
 }
 
 func NewMemory(size int) *MainMemory {
 	memory := &MainMemory{
-		size: size,
+		Size: size,
 		data: make(map[int]string, size), // Cria o map com a capacidade inicial de `size`.
 	}
 
@@ -26,7 +26,7 @@ func NewMemory(size int) *MainMemory {
 
 // Write escreve um valor na memória em um endereço específico.
 func (m *MainMemory) Write(address int, value string) error {
-	if address < 0 || address >= m.size {
+	if address < 0 || address >= m.Size {
 		return fmt.Errorf("endereço %d está fora dos limites da memória", address)
 	}
 	m.data[address] = value
@@ -35,7 +35,7 @@ func (m *MainMemory) Write(address int, value string) error {
 
 // Read lê um valor da memória em um endereço específico.
 func (m *MainMemory) Read(address int) (string, error) {
-	if address < 0 || address >= m.size {
+	if address < 0 || address >= m.Size {
 		return "", fmt.Errorf("endereço %d está fora dos limites da memória", address)
 	}
 	return m.data[address], nil
@@ -43,13 +43,13 @@ func (m *MainMemory) Read(address int) (string, error) {
 
 // GetDisplayBlocks retorna os blocos da memória a serem exibidos.
 func (m *MainMemory) GetDisplayBlocks() [][]string {
-	blockSize := m.size / 5
+	blockSize := m.Size / 5
 	var blocks [][]string
 
-	for start := 0; start < m.size; start += blockSize {
+	for start := 0; start < m.Size; start += blockSize {
 		end := start + blockSize
-		if end > m.size {
-			end = m.size
+		if end > m.Size {
+			end = m.Size
 		}
 
 		// Adiciona os dados do bloco atual à lista de blocos.
