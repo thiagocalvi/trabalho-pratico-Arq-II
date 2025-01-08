@@ -1,9 +1,9 @@
 package cache
 
 import (
+	"fmt"
 	"testing"
 	"trabalho_pratico/main_memory"
-	"fmt"
 )
 
 func TestNewCacheBlock(t *testing.T) {
@@ -30,159 +30,159 @@ func TestNewCacheBlock(t *testing.T) {
 }
 
 func TestNewCache(t *testing.T) {
-    mainMemorySize := 1000
-    cache := NewCache(mainMemorySize)
+	mainMemorySize := 1000
+	cache := NewCache(mainMemorySize)
 
-    // Verifica se a cache foi criada corretamente
-    expectedCacheSize := int(float64(mainMemorySize) * 0.4)
-    if cache.size != expectedCacheSize {
-        t.Errorf("Expected cache size %d, got %d", expectedCacheSize, cache.size)
-    }
+	// Verifica se a cache foi criada corretamente
+	expectedCacheSize := int(float64(mainMemorySize) * 0.4)
+	if cache.size != expectedCacheSize {
+		t.Errorf("Expected cache size %d, got %d", expectedCacheSize, cache.size)
+	}
 
-    // Verifica o número de blocos
-    if len(cache.blocks) != expectedCacheSize {
-        t.Errorf("Expected %d blocks, got %d", expectedCacheSize, len(cache.blocks))
-    }
+	// Verifica o número de blocos
+	if len(cache.blocks) != expectedCacheSize {
+		t.Errorf("Expected %d blocks, got %d", expectedCacheSize, len(cache.blocks))
+	}
 
-    // Verifica cada bloco individualmente
-    for i := 0; i < expectedCacheSize; i++ {
-        block, exists := cache.blocks[i]
-        if !exists {
-            t.Errorf("Expected block %d to exist", i)
-            continue
-        }
+	// Verifica cada bloco individualmente
+	for i := 0; i < expectedCacheSize; i++ {
+		block, exists := cache.blocks[i]
+		if !exists {
+			t.Errorf("Expected block %d to exist", i)
+			continue
+		}
 
-        if block.tag != i {
-            t.Errorf("Expected block %d to have tag %d, got %d", i, i, block.tag)
-        }
+		if block.tag != i {
+			t.Errorf("Expected block %d to have tag %d, got %d", i, i, block.tag)
+		}
 
-        if block.state != Invalid {
-            t.Errorf("Expected block %d to have state Invalid, got %v", i, block.state)
-        }
-    }
+		if block.state != Invalid {
+			t.Errorf("Expected block %d to have state Invalid, got %v", i, block.state)
+		}
+	}
 
-    // Verifica se a fila está vazia inicialmente
-    if len(cache.queue) != 0 {
-        t.Errorf("Expected queue to be empty, got length %d", len(cache.queue))
-    }
+	// Verifica se a fila está vazia inicialmente
+	if len(cache.queue) != 0 {
+		t.Errorf("Expected queue to be empty, got length %d", len(cache.queue))
+	}
 }
 
 func TestCacheQueueInitialization(t *testing.T) {
-    mainMemorySize := 1000
-    cache := NewCache(mainMemorySize)
+	mainMemorySize := 1000
+	cache := NewCache(mainMemorySize)
 
-    expectedCacheSize := int(float64(mainMemorySize) * 0.4)
+	expectedCacheSize := int(float64(mainMemorySize) * 0.4)
 
-    // Verifica que a fila está vazia
-    if len(cache.queue) != 0 {
-        t.Errorf("Expected queue to be empty initially, got length %d", len(cache.queue))
-    }
+	// Verifica que a fila está vazia
+	if len(cache.queue) != 0 {
+		t.Errorf("Expected queue to be empty initially, got length %d", len(cache.queue))
+	}
 
-    // Verifica a capacidade da fila
-    if cap(cache.queue) != expectedCacheSize {
-        t.Errorf("Expected queue capacity %d, got %d", expectedCacheSize, cap(cache.queue))
-    }
+	// Verifica a capacidade da fila
+	if cap(cache.queue) != expectedCacheSize {
+		t.Errorf("Expected queue capacity %d, got %d", expectedCacheSize, cap(cache.queue))
+	}
 }
 
 func TestCacheWrite(t *testing.T) {
-    mainMemory := main_memory.NewMemory(1000)
-    cache := NewCache(mainMemory.Size)
+	mainMemory := main_memory.NewMemory(1000)
+	cache := NewCache(mainMemory.Size)
 
-    address := 10
-    value := "teste"
+	address := 10
+	value := "teste"
 
-    // Realiza a escrita na cache
-    err := cache.Write(address, value, mainMemory)
-    if err != nil {
-        t.Errorf("Erro ao escrever na cache: %v", err)
-    }
+	// Realiza a escrita na cache
+	err := cache.Write(address, value, mainMemory)
+	if err != nil {
+		t.Errorf("Erro ao escrever na cache: %v", err)
+	}
 
-    // Verifica o bloco correspondente
-    tag := address % cache.size
-    block, exists := cache.blocks[tag]
-    if !exists {
-        t.Fatalf("Bloco da tag %d não foi criado", tag)
-    }
+	// Verifica o bloco correspondente
+	tag := address % cache.size
+	block, exists := cache.blocks[tag]
+	if !exists {
+		t.Fatalf("Bloco da tag %d não foi criado", tag)
+	}
 
-    if block.state != Modified {
-        t.Errorf("Estado incorreto do bloco. Esperado: Modified, Recebido: %v", block.state)
-    }
+	if block.state != Modified {
+		t.Errorf("Estado incorreto do bloco. Esperado: Modified, Recebido: %v", block.state)
+	}
 
-    if len(block.data) == 0 || block.data[0] != value {
-        t.Errorf("Valor incorreto no bloco. Esperado: %q, Recebido: %q", value, block.data[0])
-    }
+	if len(block.data) == 0 || block.data[0] != value {
+		t.Errorf("Valor incorreto no bloco. Esperado: %q, Recebido: %q", value, block.data[0])
+	}
 
-    // Verifica se a tag foi adicionada à fila
-    if len(cache.queue) == 0 || cache.queue[len(cache.queue)-1] != tag {
-        t.Errorf("Tag %d não foi adicionada corretamente à fila", tag)
-    }
+	// Verifica se a tag foi adicionada à fila
+	if len(cache.queue) == 0 || cache.queue[len(cache.queue)-1] != tag {
+		t.Errorf("Tag %d não foi adicionada corretamente à fila", tag)
+	}
 }
 
 func TestCacheRead(t *testing.T) {
-    mainMemory := main_memory.NewMemory(1000)
-    cache := NewCache(4)
+	mainMemory := main_memory.NewMemory(1000)
+	cache := NewCache(1000)
 
-    // Inicializa a memória principal
-    for i := 0; i < 10; i++ {
-        _ = mainMemory.Write(i, fmt.Sprintf("valor %d", i))
-    }
+	// Inicializa a memória principal
+	for i := 0; i < 10; i++ {
+		_ = mainMemory.Write(i, fmt.Sprintf("valor %d", i))
+	}
 
-    // Testa leitura com cache miss
-    value := cache.read(1, mainMemory)
-    if value != "valor 1" {
-        t.Errorf("Erro na leitura (miss). Esperado: %q, Recebido: %q", "valor 1", value)
-    }
+	// Testa leitura com cache miss
+	value := cache.Read(1, mainMemory)
+	if value != "valor 1" {
+		t.Errorf("Erro na leitura (miss). Esperado: %q, Recebido: %q", "valor 1", value)
+	}
 
-    // Verifica se o bloco foi adicionado corretamente
-    tag := 1 % cache.size
-    block, exists := cache.blocks[tag]
-    if !exists || len(block.data) == 0 || block.data[0] != "valor 1" {
-        t.Errorf("Bloco não foi adicionado corretamente na cache após miss.")
-    }
+	// Verifica se o bloco foi adicionado corretamente
+	tag := 1 % cache.size
+	block, exists := cache.blocks[tag]
+	if !exists || len(block.data) == 0 || block.data[0] != "valor 1" {
+		t.Errorf("Bloco não foi adicionado corretamente na cache após miss.")
+	}
 
-    // Testa leitura com cache hit
-    value = cache.read(1, mainMemory)
-    if value != "valor 1" {
-        t.Errorf("Erro na leitura (hit). Esperado: %q, Recebido: %q", "valor 1", value)
-    }
+	// Testa leitura com cache hit
+	value = cache.Read(1, mainMemory)
+	if value != "valor 1" {
+		t.Errorf("Erro na leitura (hit). Esperado: %q, Recebido: %q", "valor 1", value)
+	}
 }
 
 func TestReplaceBlock(t *testing.T) {
-    mainMemory := main_memory.NewMemory(1000)
-    cache := NewCache(mainMemory.Size)
+	mainMemory := main_memory.NewMemory(1000)
+	cache := NewCache(mainMemory.Size)
 
-    // Simula o preenchimento total da cache
-    for i := 0; i < cache.size; i++ {
-        cache.queue = append(cache.queue, i)
-        cache.blocks[i] = &CacheBlock{
-            tag:   i,
-            data:  []string{fmt.Sprintf("valor antigo %d", i)},
-            state: Modified,
-        }
-    }
+	// Simula o preenchimento total da cache
+	for i := 0; i < cache.size; i++ {
+		cache.queue = append(cache.queue, i)
+		cache.blocks[i] = &CacheBlock{
+			tag:   i,
+			data:  []string{fmt.Sprintf("valor antigo %d", i)},
+			state: Modified,
+		}
+	}
 
-    // Escreve um novo valor, forçando a substituição
-    address := 100
-    value := "novo valor"
-    cache.ReplaceBlock(address, value, mainMemory)
+	// Escreve um novo valor, forçando a substituição
+	address := 100
+	value := "novo valor"
+	cache.ReplaceBlock(address, value, mainMemory)
 
-    // Verifica se o bloco mais antigo foi removido
-    oldest := 0
-    if _, exists := cache.blocks[oldest]; exists {
-        t.Errorf("Bloco mais antigo (%d) não foi removido corretamente", oldest)
-    }
+	// Verifica se o bloco mais antigo foi removido
+	oldest := 0
+	if _, exists := cache.blocks[oldest]; exists {
+		t.Errorf("Bloco mais antigo (%d) não foi removido corretamente", oldest)
+	}
 
-    // Verifica se o valor antigo foi sincronizado com a memória principal
-    if memValue, _ := mainMemory.Read(oldest); memValue != "valor antigo 0" {
-        t.Errorf("Valor antigo não foi escrito na memória principal. Esperado: %q, Recebido: %q", "valor antigo 0", memValue)
-    }
+	// Verifica se o valor antigo foi sincronizado com a memória principal
+	if memValue, _ := mainMemory.Read(oldest); memValue != "valor antigo 0" {
+		t.Errorf("Valor antigo não foi escrito na memória principal. Esperado: %q, Recebido: %q", "valor antigo 0", memValue)
+	}
 
-    // Verifica o novo bloco
-    newTag := address % cache.size
-    newBlock, exists := cache.blocks[newTag]
-    if !exists || newBlock.data[0] != value || newBlock.state != Modified {
-        t.Errorf("Novo bloco não foi atualizado corretamente. Esperado: {Tag: %d, Dados: %q, Estado: Modified}", newTag, value)
-    }
+	// Verifica o novo bloco
+	newTag := address % cache.size
+	newBlock, exists := cache.blocks[newTag]
+	if !exists || newBlock.data[0] != value || newBlock.state != Modified {
+		t.Errorf("Novo bloco não foi atualizado corretamente. Esperado: {Tag: %d, Dados: %q, Estado: Modified}", newTag, value)
+	}
 }
 
 func TestCacheGetDisplayBlocks(t *testing.T) {
