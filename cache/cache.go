@@ -2,6 +2,7 @@ package cache
 
 import (
     "fmt"
+    "sync"
     "trabalho_pratico/main_memory"
 )
 
@@ -33,148 +34,262 @@ func (state CacheBlockState) String() string {
     }
 }
 
+// Bus de coerência para comunicação entre caches
+type CoherencyBus struct {
+    mu      sync.RWMutex
+    caches  []*Cache
+    memory  *main_memory.MainMemory
+}
+
+func NewCoherencyBus(memory *main_memory.MainMemory) *CoherencyBus {
+    return &CoherencyBus{
+        memory: memory,
+        caches: make([]*Cache, 0),
+    }
+}
+
+// Adiciona uma cache ao bus
+func (b *CoherencyBus) AddCache(cache *Cache) {
+    b.mu.Lock()
+    defer b.mu.Unlock()
+    b.caches = append(b.caches, cache)
+    cache.id = len(b.caches) - 1
+}
+
 type CacheBlock struct {
-    address int             // Endereço do bloco na memória principal
-    data    []string        // Dados armazenados na linha da cache
-    state   CacheBlockState // Estado do MESIF
-    time    int            // Para implementação do FIFO
+    address int             
+    data    []string        
+    state   CacheBlockState 
+    time    int            
 }
 
 type Cache struct {
-    size      int                 // Número de linhas na cache
-    lineSize  int                 // Número de dados por linha
-    blocks    map[int]*CacheBlock // Mapeamento de linhas para blocos
-    nextTime  int                 // Contador para FIFO
+    id       int                 // ID único da cache
+    size     int                 // Número de linhas
+    lineSize int                 // Tamanho da linha
+    blocks   map[int]*CacheBlock // Blocos da cache
+    nextTime int                 // Contador FIFO
+    bus      *CoherencyBus      // Referência ao bus
+    mu       sync.RWMutex       // Mutex para operações concorrentes
 }
 
-func NewCache(mainMemorySize int) *Cache {
-    cacheSize := int(float64(mainMemorySize) * 0.4) // 40% do tamanho da memória principal
-    lineSize := int(float64(cacheSize) * 0.2)       // 20% do tamanho da cache
+func NewCache(mainMemorySize int, bus *CoherencyBus) *Cache {
+    cacheSize := int(float64(mainMemorySize) * 0.4)
+    lineSize := int(float64(cacheSize) * 0.2)
 
-    return &Cache{
+    cache := &Cache{
         size:     cacheSize,
         lineSize: lineSize,
         blocks:   make(map[int]*CacheBlock),
         nextTime: 0,
+        bus:      bus,
     }
-}
-
-func (c *Cache) read(address int, memory *main_memory.MainMemory) string {
-    fmt.Printf("Lendo endereço %d...\n", address)
-
-    // Procura o endereço em qualquer linha da cache (mapeamento associativo)
-    for idx, block := range c.blocks {
-        if block.address == address {
-            fmt.Printf("Cache hit: Dados encontrados na linha %d\n", idx)
-            if block.state == Invalid {
-                // Se o bloco estiver inválido, busca da memória principal
-                memValue, err := memory.Read(address)
-                if err != nil {
-                    panic(fmt.Sprintf("Erro ao ler da memória principal: %v", err))
-                }
-                block.data[0] = memValue
-                block.state = Exclusive // Primeiro acesso após inválido
-            }
-            return block.data[0]
-        }
-    }
-
-    // Cache miss: Lê da memória principal
-    fmt.Printf("Cache miss: Lendo da memória principal.\n")
-    memValue, err := memory.Read(address)
-    if err != nil {
-        panic(fmt.Sprintf("Erro ao ler da memória principal: %v", err))
-    }
-
-    // Se houver espaço na cache
-    if len(c.blocks) < c.size {
-        // Encontra primeira linha disponível
-        for i := 0; i < c.size; i++ {
-            if _, exists := c.blocks[i]; !exists {
-                c.blocks[i] = &CacheBlock{
-                    address: address,
-                    data:    []string{memValue},
-                    state:   Exclusive,
-                    time:    c.nextTime,
-                }
-                c.nextTime++
-                return memValue
-            }
-        }
-    }
-
-    // Caso não haja espaço, usa FIFO para substituição
-    c.replaceFIFO(address, memValue, memory)
-    return memValue
-}
-
-func (c *Cache) replaceFIFO(address int, value string, memory *main_memory.MainMemory) {
-    var oldestTime int = -1
-    var oldestIdx int = -1
-
-    // Encontra o bloco mais antigo
-    for idx, block := range c.blocks {
-        if oldestTime == -1 || block.time < oldestTime {
-            oldestTime = block.time
-            oldestIdx = idx
-        }
-    }
-
-    oldBlock := c.blocks[oldestIdx]
     
-    // Se o bloco mais antigo estiver modificado, sincroniza com a memória
-    if oldBlock.state == Modified {
-        err := memory.Write(oldBlock.address, oldBlock.data[0])
-        if err != nil {
-            panic(fmt.Sprintf("Erro ao sincronizar com a memória principal: %v", err))
+    bus.AddCache(cache)
+    return cache
+}
+
+// Busca um bloco em outras caches
+func (c *Cache) findInOtherCaches(address int) (*Cache, *CacheBlock) {
+    c.bus.mu.RLock()
+    defer c.bus.mu.RUnlock()
+
+    for _, otherCache := range c.bus.caches {
+        if otherCache.id == c.id {
+            continue
+        }
+
+        otherCache.mu.RLock()
+        if block, exists := otherCache.blocks[address]; exists && 
+           (block.state == Modified || block.state == Forward) {
+            otherCache.mu.RUnlock()
+            return otherCache, block
+        }
+        otherCache.mu.RUnlock()
+    }
+    return nil, nil
+}
+
+// Invalida cópias em outras caches
+func (c *Cache) invalidateOtherCopies(address int) {
+    c.bus.mu.RLock()
+    defer c.bus.mu.RUnlock()
+
+    for _, otherCache := range c.bus.caches {
+        if otherCache.id == c.id {
+            continue
+        }
+
+        otherCache.mu.Lock()
+        if block, exists := otherCache.blocks[address]; exists {
+            block.state = Invalid
+            fmt.Printf("Cache %d: Invalidando bloco %d na cache %d\n",
+                c.id, address, otherCache.id)
+        }
+        otherCache.mu.Unlock()
+    }
+}
+
+func (c *Cache) Read(address int) (string, error) {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+
+    fmt.Printf("Cache %d: Lendo endereço %d\n", c.id, address)
+
+    // 1. Verifica cache local
+    if block, exists := c.blocks[address]; exists {
+        switch block.state {
+        case Modified, Exclusive, Forward:
+            fmt.Printf("Cache %d: Hit - Estado %s\n", c.id, block.state)
+            return block.data[0], nil
+        case Shared:
+            fmt.Printf("Cache %d: Hit - Estado Shared\n", c.id)
+            return block.data[0], nil
+        case Invalid:
+            fmt.Printf("Cache %d: Bloco inválido, buscando dados atualizados\n", c.id)
         }
     }
 
-    // Substitui o bloco
-    c.blocks[oldestIdx] = &CacheBlock{
+    // 2. Cache miss - procura em outras caches
+    sourceCache, sourceBlock := c.findInOtherCaches(address)
+    if sourceCache != nil {
+        fmt.Printf("Cache %d: Obtendo dados da cache %d\n", c.id, sourceCache.id)
+        
+        // Cria novo bloco local
+        newBlock := &CacheBlock{
+            address: address,
+            data:    []string{sourceBlock.data[0]},
+            state:   Shared,
+            time:    c.nextTime,
+        }
+        c.nextTime++
+
+        // Atualiza estado da cache fonte
+        sourceCache.mu.Lock()
+        if sourceBlock.state == Exclusive {
+            sourceBlock.state = Forward
+        }
+        sourceCache.mu.Unlock()
+
+        // Armazena localmente
+        if len(c.blocks) >= c.size {
+            c.replaceFIFO(address, newBlock.data[0])
+        } else {
+            c.blocks[address] = newBlock
+        }
+
+        return newBlock.data[0], nil
+    }
+
+    // 3. Busca da memória principal
+    fmt.Printf("Cache %d: Buscando da memória principal\n", c.id)
+    value, err := c.bus.memory.Read(address)
+    if err != nil {
+        return "", fmt.Errorf("erro ao ler da memória: %v", err)
+    }
+
+    // Cria novo bloco
+    newBlock := &CacheBlock{
         address: address,
         data:    []string{value},
-        state:   Exclusive,
+        state:   Exclusive,  // Primeira cache a ter o dado
         time:    c.nextTime,
     }
     c.nextTime++
+
+    // Armazena na cache
+    if len(c.blocks) >= c.size {
+        c.replaceFIFO(address, value)
+    } else {
+        c.blocks[address] = newBlock
+    }
+
+    return value, nil
 }
 
-func (c *Cache) Write(address int, value string, memory *main_memory.MainMemory) error {
-    fmt.Printf("Escrevendo no endereço %d...\n", address)
+func (c *Cache) Write(address int, value string) error {
+    c.mu.Lock()
+    defer c.mu.Unlock()
 
-    // Procura o bloco em toda a cache (mapeamento associativo)
-    for _, block := range c.blocks {
-        if block.address == address {
-            block.data[0] = value
-            block.state = Modified
-            return nil
-        }
+    fmt.Printf("Cache %d: Escrevendo no endereço %d\n", c.id, address)
+
+    // 1. Invalida cópias em outras caches
+    c.invalidateOtherCopies(address)
+
+    // 2. Se o bloco já existe, apenas atualiza
+    if block, exists := c.blocks[address]; exists {
+        block.data[0] = value
+        block.state = Modified
+        fmt.Printf("Cache %d: Atualizando bloco existente para Modified\n", c.id)
+        return nil
     }
 
-    // Se não encontrou o bloco na cache
-    if len(c.blocks) < c.size {
-        // Procura primeira linha disponível
-        for i := 0; i < c.size; i++ {
-            if _, exists := c.blocks[i]; !exists {
-                c.blocks[i] = &CacheBlock{
-                    address: address,
-                    data:    []string{value},
-                    state:   Modified,
-                    time:    c.nextTime,
-                }
-                c.nextTime++
-                return nil
-            }
+    // 3. Se a cache está cheia, usa FIFO
+    if len(c.blocks) >= c.size {
+        err := c.replaceFIFO(address, value)
+        if err != nil {
+            return fmt.Errorf("erro na substituição FIFO: %v", err)
         }
+        return nil
     }
 
-    // Se não há espaço, usa FIFO
-    c.replaceFIFO(address, value, memory)
+    // 4. Se há espaço, adiciona novo bloco
+    c.blocks[address] = &CacheBlock{
+        address: address,
+        data:    []string{value},
+        state:   Modified,
+        time:    c.nextTime,
+    }
+    c.nextTime++
+
     return nil
 }
 
+func (c *Cache) replaceFIFO(address int, value string) error {
+    var oldestTime int = -1
+    var oldestAddress int = -1
+
+    // Encontra bloco mais antigo
+    for addr, block := range c.blocks {
+        if oldestTime == -1 || block.time < oldestTime {
+            oldestTime = block.time
+            oldestAddress = addr
+        }
+    }
+
+    if oldestAddress == -1 {
+        return fmt.Errorf("não foi possível encontrar bloco para substituição")
+    }
+
+    oldBlock := c.blocks[oldestAddress]
+    
+    // Write-back se necessário
+    if oldBlock.state == Modified {
+        err := c.bus.memory.Write(oldBlock.address, oldBlock.data[0])
+        if err != nil {
+            return fmt.Errorf("erro ao sincronizar com memória: %v", err)
+        }
+        fmt.Printf("Cache %d: Write-back do bloco %d\n", c.id, oldBlock.address)
+    }
+
+    // Remove bloco antigo e adiciona novo
+    delete(c.blocks, oldestAddress)
+    c.blocks[address] = &CacheBlock{
+        address: address,
+        data:    []string{value},
+        state:   Modified,
+        time:    c.nextTime,
+    }
+    c.nextTime++
+
+    return nil
+}
+
+// Métodos de visualização mantidos do código original
 func (c *Cache) GetDisplayBlocks() [][]string {
+    c.mu.RLock()
+    defer c.mu.RUnlock()
+
     blockSize := c.size / 5
     if blockSize == 0 {
         blockSize = 1
@@ -207,7 +322,7 @@ func (c *Cache) GetDisplayBlocks() [][]string {
 func (c *Cache) Display() {
     blocks := c.GetDisplayBlocks()
     for i, block := range blocks {
-        fmt.Printf("Página %d:\n", i+1)
+        fmt.Printf("Cache %d - Página %d:\n", c.id, i+1)
         for _, line := range block {
             fmt.Println(line)
         }
