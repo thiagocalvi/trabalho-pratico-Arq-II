@@ -73,23 +73,25 @@ func handleClient(conn net.Conn) {
 	}
 }
 
-// Abre um novo terminal para executar o servidor
 func startNewTerminal(mode string) error {
 	fmt.Println("========== Conectado ao servidor. ==========")
 	var cmd *exec.Cmd
 
 	// Identifica o OS atual e define o cmd
 	switch runtime.GOOS {
-	// Linux
 	case "linux":
-		cmd = exec.Command("xterm", "-e", os.Args[0], mode)
-	// Windows
+		// Verifica se `xterm` está disponível, usa `sh` como fallback
+		if _, err := exec.LookPath("xterm"); err == nil {
+			cmd = exec.Command("xterm", "-e", os.Args[0], mode)
+		} else {
+			cmd = exec.Command("sh", "-c", fmt.Sprintf("%s %s", os.Args[0], mode))
+		}
 	case "windows":
-		cmd = exec.Command("cmd", "/c", "start", os.Args[0], mode) //Testar
-	// MacOs
+		cmd = exec.Command("cmd", "/c", "start", os.Args[0], mode)
 	case "darwin":
-		// Acho que vai ser meio dificil de testar esse
 		cmd = exec.Command("osascript", "-e", fmt.Sprintf("tell application \"Terminal\" to do script \"%s %s\"", os.Args[0], mode))
+	default:
+		return fmt.Errorf("sistema operacional não suportado: %s", runtime.GOOS)
 	}
 
 	// Iniciar o segundo cmd
