@@ -3,11 +3,11 @@ Operação de leitura de dado selecionada
 Processador P1 selecionado
 P1: Read Miss (RM) no endereço 1
 P1: Dado carregado da memória pricipal
-P1: Dado carregado: ID=1, Preço=92.85 
+P1: Dado carregado: ID=1, Preço=11.12 
 ------------------------ Interação 2 ------------------------
 
 === Cache do processador P1 ===
-Linha 0: Tag=1, ID=1, Preço=92.85, Estado=E
+Linha 0: Tag=1, ID=1, Preço=11.12, Estado=E
 Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
 Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
 Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
@@ -35,14 +35,14 @@ Cache designada como Forward para endereço 1
 ------------------------ Interação 4 ------------------------
 
 === Cache do processador P1 ===
-Linha 0: Tag=1, ID=1, Preço=92.85, Estado=S
+Linha 0: Tag=1, ID=1, Preço=11.12, Estado=S
 Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
 Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
 Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
 Linha 4: Tag=-1, ID=0, Preço=0.00, Estado=I
 
 === Cache do processador P2 ===
-Linha 0: Tag=1, ID=1, Preço=92.85, Estado=F
+Linha 0: Tag=1, ID=1, Preço=11.12, Estado=F
 Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
 Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
 Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
@@ -55,61 +55,3 @@ Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
 Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
 Linha 4: Tag=-1, ID=0, Preço=0.00, Estado=I
 ------------------------ Interação 5 ------------------------
-Operação de leitura de dado selecionada
-Processador P3 selecionado
-P3: Read Miss (RM) no endereço 1
-P3: Dado carregado de outra cache
-Cache designada como Forward para endereço 1
------------------------- Interação 6 ------------------------
-
-=== Cache do processador P1 ===
-Linha 0: Tag=1, ID=1, Preço=92.85, Estado=S
-Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 4: Tag=-1, ID=0, Preço=0.00, Estado=I
-
-=== Cache do processador P2 ===
-Linha 0: Tag=1, ID=1, Preço=92.85, Estado=S
-Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 4: Tag=-1, ID=0, Preço=0.00, Estado=I
-
-=== Cache do processador P3 ===
-Linha 0: Tag=1, ID=1, Preço=92.85, Estado=F
-Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 4: Tag=-1, ID=0, Preço=0.00, Estado=I
------------------------- Interação 7 ------------------------
-Operação de escrita de dado selecionada
-Processador P1 selecionado
-Endereço de memória 1 selecionado
-Valor 9999.000000 sendo escrito no endereço 1
-P1: Write Hit (WH) no endereço 1
-Cache invalidada: Endereço 1
-Cache invalidada: Endereço 1
------------------------- Interação 8 ------------------------
-
-=== Cache do processador P1 ===
-Linha 0: Tag=1, ID=1, Preço=9999.00, Estado=M
-Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 4: Tag=-1, ID=0, Preço=0.00, Estado=I
-
-=== Cache do processador P2 ===
-Linha 0: Tag=1, ID=1, Preço=92.85, Estado=I
-Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 4: Tag=-1, ID=0, Preço=0.00, Estado=I
-
-=== Cache do processador P3 ===
-Linha 0: Tag=1, ID=1, Preço=92.85, Estado=I
-Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 4: Tag=-1, ID=0, Preço=0.00, Estado=I
------------------------- Interação 9 ------------------------

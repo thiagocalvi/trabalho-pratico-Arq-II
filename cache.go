@@ -103,17 +103,21 @@ func EncontrarLinhaParaSubstituir(cache Cache, memoria MemoriaPrincipal, conn ne
 //	cacheAtual: cache que está realizando a operação (não será invalidada)
 //	conn: conexão com o servidor
 //	arquivo: aquivo de log
-func InvalidarOutrasCaches(endereco int, cacheAtual *Cache, conn net.Conn, arquivo *os.File) {
+func InvalidarOutrasCaches(endereco int, cacheAtual *Cache, conn net.Conn, arquivo *os.File, memoria MemoriaPrincipal) {
 	if caches, ok := cacheRegistry[endereco]; ok {
 		for _, c := range caches {
 			if c != cacheAtual {
 				for i := range *c {
 					if (*c)[i].Tag == endereco {
-						(*c)[i].Estado = Invalid
-						msg := fmt.Sprintf("Cache invalidada: Endereço %d\n", endereco)
-						conn.Write([]byte(msg))
-						arquivo.WriteString(msg)
-
+						// Modificação foi feita aqui
+						if (*c)[i].Estado == Modify {
+							memoria[endereco] = (*c)[endereco].Dado
+						} else {
+							(*c)[i].Estado = Invalid
+							msg := fmt.Sprintf("Cache invalidada: Endereço %d\n", endereco)
+							conn.Write([]byte(msg))
+							arquivo.WriteString(msg)
+						}
 					}
 				}
 			}
@@ -256,7 +260,7 @@ func EscreverDado(processador int, endereco int, valor float64, memoria MemoriaP
 			arquivo.WriteString(msg)
 			(*cache)[i].Dado.Preco = valor
 			(*cache)[i].Estado = Modify
-			InvalidarOutrasCaches(endereco, cache, conn, arquivo)
+			InvalidarOutrasCaches(endereco, cache, conn, arquivo, memoria)
 			return
 		}
 	}
@@ -280,5 +284,5 @@ func EscreverDado(processador int, endereco int, valor float64, memoria MemoriaP
 
 	// Atualiza registros e estados
 	cacheRegistry[endereco] = append(cacheRegistry[endereco], cache)
-	InvalidarOutrasCaches(endereco, cache, conn, arquivo)
+	InvalidarOutrasCaches(endereco, cache, conn, arquivo, memoria)
 }
