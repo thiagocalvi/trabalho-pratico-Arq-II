@@ -113,6 +113,7 @@ func InvalidarOutrasCaches(endereco int, cacheAtual *Cache, conn net.Conn, arqui
 						msg := fmt.Sprintf("Cache invalidada: Endereço %d\n", endereco)
 						conn.Write([]byte(msg))
 						arquivo.WriteString(msg)
+
 					}
 				}
 			}
@@ -206,6 +207,7 @@ func LerDado(processador int, endereco int, memoria MemoriaPrincipal, cache *Cac
 		for _, linha := range *fonte {
 			if linha.Tag == endereco {
 				dado = linha.Dado
+				(*fonte)[endereco-1].Estado = Shared
 				break
 			}
 		}
