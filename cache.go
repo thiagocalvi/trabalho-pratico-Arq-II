@@ -109,10 +109,14 @@ func InvalidarOutrasCaches(endereco int, cacheAtual *Cache, conn net.Conn, arqui
 			if c != cacheAtual {
 				for i := range *c {
 					if (*c)[i].Tag == endereco {
-						// Modificação foi feita aqui
+						// Se o estado for Modify atualiza na memória principal
 						if (*c)[i].Estado == Modify {
-							memoria[endereco] = (*c)[endereco].Dado
+							memoria[endereco] = (*c)[endereco-1].Dado
+							msg := fmt.Sprintf("Dado escrito na memória principal endereço %d\n", endereco)
+							conn.Write([]byte(msg))
+							arquivo.WriteString(msg)
 						}
+						// Invalida a linha da cache
 						(*c)[i].Estado = Invalid
 						msg := fmt.Sprintf("Cache invalidada: Endereço %d\n", endereco)
 						conn.Write([]byte(msg))

@@ -3,46 +3,24 @@ Operação de leitura de dado selecionada
 Processador P1 selecionado
 P1: Read Miss (RM) no endereço 1
 P1: Dado carregado da memória pricipal
-P1: Dado carregado: ID=1, Preço=11.12 
+P1: Dado carregado: ID=1, Preço=30.92 
 ------------------------ Interação 2 ------------------------
-
-=== Cache do processador P1 ===
-Linha 0: Tag=1, ID=1, Preço=11.12, Estado=E
-Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 4: Tag=-1, ID=0, Preço=0.00, Estado=I
-
-=== Cache do processador P2 ===
-Linha 0: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 4: Tag=-1, ID=0, Preço=0.00, Estado=I
-
-=== Cache do processador P3 ===
-Linha 0: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
-Linha 4: Tag=-1, ID=0, Preço=0.00, Estado=I
------------------------- Interação 3 ------------------------
 Operação de leitura de dado selecionada
 Processador P2 selecionado
 P2: Read Miss (RM) no endereço 1
 P2: Dado carregado de outra cache
 Cache designada como Forward para endereço 1
------------------------- Interação 4 ------------------------
+------------------------ Interação 3 ------------------------
 
 === Cache do processador P1 ===
-Linha 0: Tag=1, ID=1, Preço=11.12, Estado=S
+Linha 0: Tag=1, ID=1, Preço=30.92, Estado=S
 Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
 Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
 Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
 Linha 4: Tag=-1, ID=0, Preço=0.00, Estado=I
 
 === Cache do processador P2 ===
-Linha 0: Tag=1, ID=1, Preço=11.12, Estado=F
+Linha 0: Tag=1, ID=1, Preço=30.92, Estado=F
 Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
 Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
 Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
@@ -54,4 +32,115 @@ Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
 Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
 Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
 Linha 4: Tag=-1, ID=0, Preço=0.00, Estado=I
+------------------------ Interação 4 ------------------------
+Operação de escrita de dado selecionada
+Processador P1 selecionado
+Endereço de memória 1 selecionado
+Valor 999.000000 sendo escrito no endereço 1
+P1: Write Hit (WH) no endereço 1
+Cache invalidada: Endereço 1
 ------------------------ Interação 5 ------------------------
+
+=== Cache do processador P1 ===
+Linha 0: Tag=1, ID=1, Preço=999.00, Estado=M
+Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 4: Tag=-1, ID=0, Preço=0.00, Estado=I
+
+=== Cache do processador P2 ===
+Linha 0: Tag=1, ID=1, Preço=30.92, Estado=I
+Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 4: Tag=-1, ID=0, Preço=0.00, Estado=I
+
+=== Cache do processador P3 ===
+Linha 0: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 4: Tag=-1, ID=0, Preço=0.00, Estado=I
+------------------------ Interação 6 ------------------------
+Operação de escrita de dado selecionada
+Processador P2 selecionado
+Endereço de memória 1 selecionado
+Valor 777.000000 sendo escrito no endereço 1
+P2: Write Miss (WM) no endereço 1
+Dado escrito na memória principal endereço 1
+Cache invalidada: Endereço 1
+------------------------ Interação 7 ------------------------
+
+=== Cache do processador P1 ===
+Linha 0: Tag=1, ID=1, Preço=999.00, Estado=I
+Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 4: Tag=-1, ID=0, Preço=0.00, Estado=I
+
+=== Cache do processador P2 ===
+Linha 0: Tag=1, ID=1, Preço=777.00, Estado=M
+Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 4: Tag=-1, ID=0, Preço=0.00, Estado=I
+
+=== Cache do processador P3 ===
+Linha 0: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 1: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 2: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 3: Tag=-1, ID=0, Preço=0.00, Estado=I
+Linha 4: Tag=-1, ID=0, Preço=0.00, Estado=I
+------------------------ Interação 8 ------------------------
+=== Memória Principal ===
+Linha 0: ID=0, Preço=27.60
+Linha 1: ID=1, Preço=999.00
+Linha 2: ID=2, Preço=10.52
+Linha 3: ID=3, Preço=75.00
+Linha 4: ID=4, Preço=51.95
+Linha 5: ID=5, Preço=32.38
+Linha 6: ID=6, Preço=11.00
+Linha 7: ID=7, Preço=93.00
+Linha 8: ID=8, Preço=53.34
+Linha 9: ID=9, Preço=27.22
+Linha 10: ID=10, Preço=28.56
+Linha 11: ID=11, Preço=97.93
+Linha 12: ID=12, Preço=56.17
+Linha 13: ID=13, Preço=96.93
+Linha 14: ID=14, Preço=51.01
+Linha 15: ID=15, Preço=25.14
+Linha 16: ID=16, Preço=39.93
+Linha 17: ID=17, Preço=84.54
+Linha 18: ID=18, Preço=57.86
+Linha 19: ID=19, Preço=96.55
+Linha 20: ID=20, Preço=9.25
+Linha 21: ID=21, Preço=10.91
+Linha 22: ID=22, Preço=78.50
+Linha 23: ID=23, Preço=23.15
+Linha 24: ID=24, Preço=87.78
+Linha 25: ID=25, Preço=9.26
+Linha 26: ID=26, Preço=76.51
+Linha 27: ID=27, Preço=24.98
+Linha 28: ID=28, Preço=66.10
+Linha 29: ID=29, Preço=50.36
+Linha 30: ID=30, Preço=86.01
+Linha 31: ID=31, Preço=68.72
+Linha 32: ID=32, Preço=5.32
+Linha 33: ID=33, Preço=71.80
+Linha 34: ID=34, Preço=19.82
+Linha 35: ID=35, Preço=84.66
+Linha 36: ID=36, Preço=15.64
+Linha 37: ID=37, Preço=8.58
+Linha 38: ID=38, Preço=49.64
+Linha 39: ID=39, Preço=52.19
+Linha 40: ID=40, Preço=36.67
+Linha 41: ID=41, Preço=80.02
+Linha 42: ID=42, Preço=63.32
+Linha 43: ID=43, Preço=99.35
+Linha 44: ID=44, Preço=19.82
+Linha 45: ID=45, Preço=30.05
+Linha 46: ID=46, Preço=40.01
+Linha 47: ID=47, Preço=16.06
+Linha 48: ID=48, Preço=15.38
+Linha 49: ID=49, Preço=58.16
+------------------------ Interação 9 ------------------------
